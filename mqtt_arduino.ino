@@ -21,11 +21,11 @@ void onConnectionEstablished();
 EspMQTTClient client(
  "Nätverksnamn",           // Wifi ssid
   "password",           // Wifi password
-  "maqiatto.com",  // MQTT broker ip
-  "användarnamn på maqiatton",            // MQTT username
+  "10.22.5.26",  // MQTT broker ip
+  "jeton",            // MQTT username
   "password",       // MQTT password
-  "klientnamn",          // Client name
-  1883            // MQTT broker port
+  "jeton",          // Client name
+  1884            // MQTT broker port
 );
  
 //Extern lampa
