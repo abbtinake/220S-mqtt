@@ -1,56 +1,50 @@
 <template>
   <q-page class="bg-grey-3">
-    <div class="q-pa-md">
-      <div style="width: 100%">
-        <q-chat-message v-for="info in chatMessages" :name="info.user" :avatar="info.user == 'salle'
-            ? 'https://cdn.quasar.dev/img/avatar1.jpg'
-            : 'https://cdn.quasar.dev/img/avatar2.jpg'
-          " :text="[info.message]" :sent="info.user == 'salle'"
-          :bg-color="info.user == 'salle' ? 'primary' : 'success'" />
-      </div>
-    </div>
-    <div class="absolute-bottom row">
-      <q-input type="text" class="col bg-white" v-model="publishMessage" outlined />
-      <q-btn @click="publish" icon="send" color="primary"></q-btn>
-    </div>
+    <Joystick
+    :size="100"
+    base-color="lightblue"
+    stick-color="orange"
+    :throttle="100"
+    @start="start"
+    @stop="stop"
+    @move="move"
+  />
   </q-page>
 </template>
 
 <script setup>
 import { client } from "src/boot/mqtt-boot"
 import { ref, onMounted } from 'vue'
+import Joystick from 'vue-joystick-component'
+
+const start = () => console.log('start')
+const stop = () => console.log('stop')
+const move = ({ x, y, direction, distance }) => {
+  client.publish("tindra/direction", String(direction));
+  client.publish("tindra/distance", String(distance));
+}
 
 onMounted(() => {
   client.on("connect", () => {
     console.log("Conntected!")
-    client.subscribe("topic", function (err) {
-      if (!err) {
-        let info = JSON.stringify({
-          user: "salle",
-          message: "Hello mqtt",
-        })
-        client.publish("topic", info)
-      }
+    client.subscribe("tindra/distance","tindra/direction", function (err) {
     })
   })
 })
 
 client.on("message", (topic, message) => {
-  console.log(`${topic} - ${message.toString()}`)
+  // console.log(`${topic} - ${message.toString()}`)
   let info = JSON.parse(message)
-  chatMessages.value.push(info)
 })
 
-const publishMessage = ref("")
-const chatMessages = ref([])
 
-const publish = () => {
-  let info = JSON.stringify({
-    user: "salle",
-    message: publishMessage.value,
-  })
-  client.publish("topic", info)
-  publishMessage.value = ""
+const distance = (b) => {
+  client.publish("tindra/distance", info)
+}
+
+const direction = (a) => {
+  let info = JSON.stringify("hej")
+  client.publish("tindra/direction", info)
 }
 
 </script>
