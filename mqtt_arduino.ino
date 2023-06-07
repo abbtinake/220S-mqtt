@@ -1,8 +1,10 @@
 #include "EspMQTTClient.h"
+#include <Servo.h>
 //Install libraries PubSubClient and EspMQTTClient
 const byte RightMotorTol = 5; //14
 const byte RightMotorTur = 0; // 12
 
+Servo Servot;
 int throttle = 0;
 int turning = 0;
 
@@ -25,6 +27,8 @@ EspMQTTClient client(
 
 void setup() {
   Serial.begin(9600);
+
+  Servot.attach(D8);
   
   pinMode(RightMotorTur, OUTPUT);
   digitalWrite(RightMotorTur, HIGH);
@@ -32,36 +36,35 @@ void setup() {
 
 
 void loop () {
-    digitalWrite(RightMotorTur, HIGH);
-    analogWrite(RightMotorTol, nospeed);
-    delay(2000);
-    analogWrite(RightMotorTol, minspeed);
-    delay(2000);
-    analogWrite(RightMotorTol, maxspeed);
-    delay(2000);
-    analogWrite(RightMotorTol, minspeed);
-    delay(2000);
-    analogWrite(RightMotorTol, nospeed);
-    delay(2000);
-    }
+  client.loop();
+  }
 
 
 
-void onConnectionEstablished()
-{
+void onConnectionEstablished(){
   client.subscribe("tindra/turning", [] (const String &payload)
   {
     Serial.println(payload);
-    payload.toInt();
-    turning = payload;
-  });
+    if(payload == "LEFT"){
+      Servot.write(90);
+      digitalWrite(RightMotorTur, HIGH);
+      } else if(payload == "RIGHT"){
+      Servot.write(0);
+      digitalWrite(RightMotorTur, HIGH);
+    }else if(payload == "FORWARD"){
+      Servot.write(45);
+      digitalWrite(RightMotorTur, HIGH);
+    }else if(payload == "BACKWARD"){
+      Servot.write(45);
+      digitalWrite(RightMotorTur, LOW);
+  }});
 
   client.subscribe("tindra/throttle", [] (const String &payload)
   {
     payload.toInt();
     Serial.println(payload);
-    throttle = payload;
+    throttle = payload.toInt()*10;
+    analogWrite(RightMotorTol, throttle);
   });
   
 }
-
