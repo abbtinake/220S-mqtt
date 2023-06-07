@@ -1,5 +1,11 @@
 #include "EspMQTTClient.h"
 //Install libraries PubSubClient and EspMQTTClient
+const byte RightMotorTol = 5; //14
+const byte RightMotorTur = 0; // 12
+
+int throttle = 0;
+int turning = 0;
+
 
 
 void onConnectionEstablished();
@@ -18,25 +24,44 @@ EspMQTTClient client(
  
 
 void setup() {
+  Serial.begin(9600);
+  
+  pinMode(RightMotorTur, OUTPUT);
+  digitalWrite(RightMotorTur, HIGH);
+  }
 
-Serial.begin(115200);
-}
+
+void loop () {
+    digitalWrite(RightMotorTur, HIGH);
+    analogWrite(RightMotorTol, nospeed);
+    delay(2000);
+    analogWrite(RightMotorTol, minspeed);
+    delay(2000);
+    analogWrite(RightMotorTol, maxspeed);
+    delay(2000);
+    analogWrite(RightMotorTol, minspeed);
+    delay(2000);
+    analogWrite(RightMotorTol, nospeed);
+    delay(2000);
+    }
 
 
 
 void onConnectionEstablished()
 {
-  client.subscribe("tindra/direction", [] (const String &payload)
+  client.subscribe("tindra/turning", [] (const String &payload)
   {
-    Serial.log(payload);
+    Serial.println(payload);
     payload.toInt();
+    turning = payload;
   });
 
-  client.subscribe("tindra/distance", [] (const String &payload)
+  client.subscribe("tindra/throttle", [] (const String &payload)
   {
-    Serial.log(payload);
     payload.toInt();
+    Serial.println(payload);
+    throttle = payload;
   });
-}
   
 }
+
